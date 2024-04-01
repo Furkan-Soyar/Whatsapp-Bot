@@ -6,7 +6,6 @@ import fs from "fs"
 
 fs.unlink(".wwebjs_auth/session-client-one/SingletonLock", () => {})
 
-const { stdout: chromiumPath } = await promisify(exec)("which chromium")
 const app = express()
 
 app.listen(3000)
@@ -15,8 +14,7 @@ app.get('/', (req, res) => res.sendStatus(200))
 const client = new WA.Client({ 
 	puppeteer: {
 		headless: false,
-		args: ["--disable-gpu", "--no-sandbox", "--disable-setuid-sandbox", "--user-agent"],
-		executablePath: chromiumPath.trim()
+		args: ["--disable-gpu", "--no-sandbox", "--disable-setuid-sandbox", "--user-agent"]
 	},
 	authStrategy: new WA.LocalAuth({ clientId: "client-one" }),
 	userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36"
