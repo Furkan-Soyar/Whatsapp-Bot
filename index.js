@@ -1,6 +1,4 @@
 import WA from "whatsapp-web.js"
-import { exec } from "node:child_process"
-import { promisify } from "node:util"
 import express from 'express'
 import fs from "fs"
 
@@ -11,14 +9,7 @@ const app = express()
 app.listen(3000)
 app.get('/', (req, res) => res.sendStatus(200))
 
-const client = new WA.Client({ 
-	puppeteer: {
-		headless: false,
-		args: ["--disable-gpu", "--no-sandbox", "--disable-setuid-sandbox", "--user-agent"]
-	},
-	authStrategy: new WA.LocalAuth({ clientId: "client-one" }),
-	userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36"
-})
+const client = new WA.Client({ authStrategy: new WA.LocalAuth({ clientId: "client-one" }) })
 client.commands = new Map()
 
 for (let eventFile of fs.readdirSync("./Events")) {
