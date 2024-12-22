@@ -7,9 +7,13 @@ import fs from "fs"
 fs.unlink(".wwebjs_auth/session-client-one/SingletonLock", () => {})
 
 const app = express()
-
 app.listen(3000)
-app.get('/', (req, res) => res.sendStatus(200))
+
+let uptime = 0
+setInterval(() => {
+	app.get('/', (req, res) => res.send(`Bot ${uptime} minutes online`))
+	uptime++
+}, 60000)
 
 mongoose.connect(process.env.MONGODB_URI).then(() => {
     const client = new WA.Client({ authStrategy: new WA.RemoteAuth({ store: new MongoStore({ mongoose }), backupSyncIntervalMs: 300000 }) })
