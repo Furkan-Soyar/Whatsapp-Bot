@@ -1,4 +1,6 @@
 import WA from "whatsapp-web.js"
+import { MongoStore } from "wwebjs-mongo"
+import mongoose from "mongoose"
 import express from 'express'
 import fs from "fs"
 
@@ -9,20 +11,23 @@ const app = express()
 app.listen(3000)
 app.get('/', (req, res) => res.sendStatus(200))
 
-const client = new WA.Client({ authStrategy: new WA.LocalAuth({ clientId: "client-one" }) })
-client.commands = new Map()
+mongoose.connect(process.env.MONGODB_URI).then(() => {
+    const client = new WA.Client({ authStrategy: new WA.RemoteAuth({ store: new MongoStore({ mongoose }), backupSyncIntervalMs: 300000 }) })
 
-for (let eventFile of fs.readdirSync("./Events")) {
-    import(`./Events/${eventFile}`).then(file => {
-		client.on(eventFile.slice(0, eventFile.indexOf(".")), (...args) => file.default(client, ...args))
-	})
-}
+    client.commands = new Map()
 
-for (const commandFile of fs.readdirSync('./Commands/')) {
-	import(`./Commands/${commandFile}`).then(file => {
-		client.commands.set(file.default.name, file.default)
-		console.log(`Whatsapp | Synchronized command > ${file.default.name[0].toUpperCase() + file.default.name.slice(1)}`)
-	})
-}
+	for (let eventFile of fs.readdirSync("./Events")) {
+	    import(`./Events/${eventFile}`).then(file => {
+			client.on(eventFile.slice(0, eventFile.indexOf(".")), (...args) => file.default(client, ...args))
+		})
+	}
 
-client.initialize()
+	for (const commandFile of fs.readdirSync('./Commands/')) {
+		import(`./Commands/${commandFile}`).then(file => {
+			client.commands.set(file.default.name, file.default)
+			console.log(`Whatsapp | Synchronized command > ${file.default.name[0].toUpperCase() + file.default.name.slice(1)}`)
+		})
+	}
+
+	client.initialize()
+})
